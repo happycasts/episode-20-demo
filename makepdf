@@ -1,0 +1,31 @@
+#!/bin/bash
+cd book-content/
+
+>all.tex
+for file in `ls *.md`
+do
+    echo $file
+    shortname=${file%.*}
+    pandoc $file -o $shortname.tex
+    cat $shortname.tex >> all.tex
+    rm $shortname.tex
+    rm *.log 2>/dev/null
+done
+
+sed -e '/tableofcontents/r  all.tex' ../latex/template.tex >book.tex
+
+sed -i 's/^\\section{/\\chapter{/g'  book.tex
+sed -i 's/^\\subsection{/\\section{/g'  book.tex
+sed -i 's/^\\subsubsection{/\\subsection{/g'  book.tex
+
+sed -i 's/\\begin{verbatim}/{\\footnotesize \\begin{quote}\\begin{verbatim}/g' book.tex
+sed -i 's/\\end{verbatim}/\\end{verbatim}\\end{quote}}/g' book.tex
+
+
+
+xelatex book.tex
+xelatex book.tex
+
+mv book.pdf ..
+rm book.* *.tex &>/dev/null
+
